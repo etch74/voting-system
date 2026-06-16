@@ -3,7 +3,8 @@ import { dbListen } from "../firebase/db";
 import { T } from "../constants";
 import VoteTally from "../components/VoteTally";
 import VoteResults from "../components/VoteResults";
-import { Btn, Card, Input, SectionLabel, Spinner, Stars, PhasePill } from "../components/ui";
+import EjectionScreen from "../components/EjectionScreen";
+import { Card, SectionLabel, Spinner, Stars } from "../components/ui";
 
 function toClock(ms) {
   const safeMs = Math.max(0, ms);
@@ -20,6 +21,8 @@ export default function DisplayPage({ initialRoomCode }) {
   const [loading, setLoading] = useState(!!initialRoomCode);
   const [error, setError] = useState("");
   const [now, setNow] = useState(Date.now());
+  const [showEjection, setShowEjection] = useState(false);
+  const [lastEjectedPlayer, setLastEjectedPlayer] = useState("");
 
   useEffect(() => {
     if (!roomCode) return;
@@ -37,6 +40,19 @@ export default function DisplayPage({ initialRoomCode }) {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [room?.gameTimerRunning]);
+
+  useEffect(() => {
+    if (!room) return;
+
+    const shouldShowEjection = room.phase === "results" && room.kickedPlayer && room.kickedPlayer !== "skip";
+    if (shouldShowEjection && room.kickedPlayer !== lastEjectedPlayer) {
+      setShowEjection(true);
+      setLastEjectedPlayer(room.kickedPlayer);
+    } else if (!shouldShowEjection) {
+      setShowEjection(false);
+      setLastEjectedPlayer("");
+    }
+  }, [room?.phase, room?.kickedPlayer, room, lastEjectedPlayer]);
 
   const submitCode = () => {
     const code = roomCodeInput.trim().toUpperCase();
@@ -77,6 +93,14 @@ export default function DisplayPage({ initialRoomCode }) {
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: "#d0daf0", position: "relative", padding: "20px 14px" }}>
       <Stars />
+      {showEjection && room?.kickedPlayer && room.kickedPlayer !== "skip" && (
+        <EjectionScreen
+          kickedPlayer={room.kickedPlayer}
+          players={players}
+          isImpostor={players.find(p => p.name === room.kickedPlayer)?.isImpostor || false}
+          onDone={() => setShowEjection(false)}
+        />
+      )}
       <div style={{ maxWidth: 960, margin: "0 auto", position: "relative", zIndex: 1 }}>
       
 
