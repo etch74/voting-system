@@ -44,5 +44,10 @@ export const DEFAULT_ROOM = {
   kickedPlayer: "",
   votingOpen:   false,
   impostorCount: 1,
+  gameDurationMs: 45 * 60 * 1000,
+  gameRemainingMs: 45 * 60 * 1000,
+  gameTimerRunning: false,
+  gameTimerStartedAt: 0,
+  gameStarted: false,
   createdAt:    0,
 };

@@ -75,7 +75,7 @@ export default function PlayerJoinPage({ initialRoomCode, onJoin }) {
               </div>
             ))}
           </div>
-          <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"2.2rem", letterSpacing:"5px", color:T.accent, lineHeight:1 }}>AMONG US</div>
+          {/* <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"2.2rem", letterSpacing:"5px", color:T.accent, lineHeight:1 }}>AMONG US</div> */}
           <div style={{ color:"#2a3a60", fontSize:"0.65rem", letterSpacing:"4px", marginTop:4 }}>LIVE ACTION • VOTING SYSTEM</div>
         </div>
 

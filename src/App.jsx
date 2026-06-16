@@ -6,6 +6,7 @@ import AdminAuthPage   from "./pages/AdminAuthPage";
 import AdminRoomPage   from "./pages/AdminRoomPage";
 import PlayerJoinPage  from "./pages/PlayerJoinPage";
 import PlayerPage      from "./pages/PlayerPage";
+import DisplayPage     from "./pages/DisplayPage";
 import { Spinner, Stars } from "./components/ui";
 import { T } from "./constants";
 
@@ -22,6 +23,10 @@ function getRoomFromUrl() {
 // Determine if we're on the admin path
 function isAdminPath() {
   return window.location.pathname.startsWith("/admin");
+}
+
+function isDisplayPath() {
+  return window.location.pathname.startsWith("/display");
 }
 
 export default function App() {
@@ -85,6 +90,11 @@ export default function App() {
   if (isAdminPath()) {
     if (!adminUser) return <AdminAuthPage />;
     return <AdminRoomPage adminUser={adminUser} />;
+  }
+
+  // ── DISPLAY PATH ───────────────────────────────────────────────────────────
+  if (isDisplayPath()) {
+    return <DisplayPage initialRoomCode={urlRoomCode} />;
   }
 
   // ── PLAYER PATH ─────────────────────────────────────────────────────────────
