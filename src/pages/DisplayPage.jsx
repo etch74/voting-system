@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { dbListen } from "../firebase/db";
 import { T } from "../constants";
+import logo from "../images/logo.png";
 import VoteTally from "../components/VoteTally";
 import VoteResults from "../components/VoteResults";
 import EjectionScreen from "../components/EjectionScreen";
@@ -91,8 +92,14 @@ export default function DisplayPage({ initialRoomCode }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, color: "#d0daf0", position: "relative", padding: "20px 14px" }}>
+    <div style={{ minHeight: "100vh", background: T.pageBg, color: T.muted, position: "relative", padding: "20px 14px" }}>
       <Stars />
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:18 }}>
+        <img src={logo} alt="Among Us IRL" style={{ width:"100px", height:"auto" }} />
+        <div style={{ textAlign:"center" }}>
+          <div style={{ color:T.muted, fontSize:"0.78rem", letterSpacing:"2px" }}>DISPLAY MODE</div>
+        </div>
+      </div>
       {showEjection && room?.kickedPlayer && room.kickedPlayer !== "skip" && (
         <EjectionScreen
           kickedPlayer={room.kickedPlayer}
@@ -115,7 +122,7 @@ export default function DisplayPage({ initialRoomCode }) {
            
 
             {showMeetingScreen ? (
-              <Card style={{ border: `1px solid ${room.phase === "voting" ? "#4488ff55" : "#b044ff55"}` }}>
+              <Card style={{ border: `1px solid ${room.phase === "voting" ? `${T.blue}55` : `${T.red}55`}` }}>
                 <SectionLabel>{room.phase === "voting" ? "Emergency Meeting" : "Meeting Results"}</SectionLabel>
                 {room.phase === "voting" ? (
                   <VoteTally alivePlayers={alivePlayers} votes={votes} votingOpen={room.votingOpen} />
@@ -124,12 +131,12 @@ export default function DisplayPage({ initialRoomCode }) {
                 )}
               </Card>
             ) : (
-              <Card style={{ textAlign: "center", padding: "50px 20px", border: "1px solid #00cc7744" }}>
-                <div style={{ color: "#2a3a60", letterSpacing: "2px", fontSize: "0.8rem", marginBottom: 8 }}>GAME TIMER</div>
-                <div style={{ fontFamily: "'Russo One',sans-serif", color: remainingMs > 0 ? "#00cc77" : "#ff6666", fontSize: "clamp(3rem, 14vw, 8rem)", letterSpacing: "4px", lineHeight: 1 }}>
+              <Card style={{ textAlign: "center", padding: "50px 20px", border: `1px solid ${T.yellow}33` }}>
+                <div style={{ color: T.muted, letterSpacing: "2px", fontSize: "0.8rem", marginBottom: 8 }}>GAME TIMER</div>
+                <div style={{ fontFamily: "'Russo One',sans-serif", color: remainingMs > 0 ? T.yellow : T.red, fontSize: "clamp(3rem, 14vw, 8rem)", letterSpacing: "4px", lineHeight: 1 }}>
                   {toClock(remainingMs)}
                 </div>
-                <div style={{ marginTop: 12, color: "#7a8cab", fontSize: "0.9rem", letterSpacing: "1px" }}>
+                <div style={{ marginTop: 12, color: T.muted, fontSize: "0.9rem", letterSpacing: "1px" }}>
                   {statusText}
                 </div>
               </Card>

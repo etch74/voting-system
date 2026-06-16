@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { dbSet, dbUpdate, dbListen, logoutAdmin, DEFAULT_ROOM } from "../firebase/db";
 import { generateRoomCode, CREWMATE_COLORS, COLOR_NAMES, T } from "../constants";
+import { PRESET_PLAYERS, PLAYER_ICONS } from "../playerData";
 import Crewmate from "../components/Crewmate";
+import logo from "../images/logo.png";
 import QRCode from "../components/QRCode";
 import VoteTally from "../components/VoteTally";
 import VoteResults from "../components/VoteResults";
@@ -86,6 +88,16 @@ export default function AdminRoomPage({ adminUser }) {
     const newRoom = { ...DEFAULT_ROOM, code, createdAt: Date.now(), adminUid: adminUser.uid };
     await dbSet(`rooms/${code}`, newRoom);
     await dbUpdate(`admins/${adminUser.uid}/rooms`, { [code]: { code, createdAt: Date.now() } });
+
+    const now = Date.now();
+    const playerEntries = Object.fromEntries(
+      PRESET_PLAYERS.map((player, index) => {
+        const id = `p_${now}_${index}`;
+        return [id, { id, name: player.name, color: player.color, alive: true, isImpostor: false }];
+      })
+    );
+    await dbUpdate(`rooms/${code}/players`, playerEntries);
+
     setActiveCode(code);
   });
 
@@ -275,25 +287,24 @@ export default function AdminRoomPage({ adminUser }) {
   // ── ROOM LIST (no room selected) ──────────────────────────────────────────
   if (!activeCode) {
     return (
-      <div style={{ minHeight:"100vh", background:T.bg, color:"#d0daf0", paddingBottom:32, position:"relative" }}>
+      <div style={{ minHeight:"100vh", background:T.pageBg, color:T.muted, paddingBottom:32, position:"relative" }}>
         <Stars/>
         <div style={{ position:"relative", zIndex:1 }}>
-          <header style={{ background:"linear-gradient(135deg,#0c0416,#090f20)", borderBottom:`2px solid ${T.accent}33`, padding:"14px 20px", display:"flex", alignItems:"center", gap:12 }}>
-            <span style={{ fontSize:"1.8rem" }}>🔴</span>
+          <header style={{ background:`linear-gradient(135deg, ${T.bg}, ${T.card})`, borderBottom:`2px solid ${T.accent}33`, padding:"14px 20px", display:"flex", alignItems:"center", gap:12 }}>
+            <img src={logo} alt="Among Us IRL" style={{ width:"100px", height:"auto" }} />
             <div>
-              {/* <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.25rem", letterSpacing:"4px", color:T.accent }}>AMONG US</div> */}
-              <div style={{ fontSize:"0.58rem", color:"#2a3a60", letterSpacing:"3px" }}>ADMIN PANEL</div>
+              <div style={{ fontSize:"0.65rem", color:T.muted, letterSpacing:"2px" }}>ADMIN PANEL</div>
             </div>
             <div style={{ marginLeft:"auto", display:"flex", gap:8, alignItems:"center" }}>
-              <span style={{ fontSize:"0.65rem", color:"#3a4a6a" }}>{adminUser.email}</span>
-              <button onClick={logoutAdmin} style={{ background:"none", border:"1px solid #1e2d50", color:"#3a4a6a", borderRadius:8, padding:"5px 10px", fontSize:"0.65rem", cursor:"pointer" }}>LOGOUT</button>
+              <span style={{ fontSize:"0.65rem", color:T.muted }}>{adminUser.email}</span>
+              <button onClick={logoutAdmin} style={{ background:T.card, border:`1px solid ${T.border}`, color:T.blue, borderRadius:8, padding:"5px 10px", fontSize:"0.65rem", cursor:"pointer" }}>LOGOUT</button>
             </div>
           </header>
 
           <main style={{ maxWidth:600, margin:"0 auto", padding:"24px 14px" }}>
             <Card style={{ marginBottom:16, textAlign:"center" }}>
               <SectionLabel>Rooms</SectionLabel>
-              <Btn onClick={createRoom} disabled={busy} color="#00cc77" full>
+              <Btn onClick={createRoom} disabled={busy} color={T.yellow} full>
                 + Create New Room
               </Btn>
             </Card>
@@ -301,7 +312,7 @@ export default function AdminRoomPage({ adminUser }) {
             {rooms === null && <div style={{ textAlign:"center", padding:24 }}><Spinner/></div>}
 
             {rooms !== null && Object.values(rooms).length === 0 && (
-              <div style={{ textAlign:"center", color:"#2a3a60", fontSize:"0.8rem", padding:24 }}>
+              <div style={{ textAlign:"center", color:T.muted, fontSize:"0.85rem", padding:24 }}>
                 No rooms yet. Create one to start!
               </div>
             )}
@@ -311,13 +322,13 @@ export default function AdminRoomPage({ adminUser }) {
                 <Card key={r.code}>
                   <div style={{ display:"flex", alignItems:"center", gap:12 }}>
                     <div style={{ flex:1 }}>
-                      <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.5rem", letterSpacing:"4px", color:"#4488ff" }}>{r.code}</div>
-                      <div style={{ fontSize:"0.62rem", color:"#2a3a60", marginTop:2 }}>
+                      <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.5rem", letterSpacing:"4px", color:T.blue }}>{r.code}</div>
+                      <div style={{ fontSize:"0.62rem", color:T.muted, marginTop:2 }}>
                         Created {new Date(r.createdAt).toLocaleDateString()}
                       </div>
                     </div>
-                    <Btn onClick={()=>setActiveCode(r.code)} color="#4488ff">MANAGE</Btn>
-                    <Btn onClick={()=>deleteRoom(r.code)} disabled={busy} color="#c51111" danger>DELETE</Btn>
+                    <Btn onClick={()=>setActiveCode(r.code)} color={T.blue}>MANAGE</Btn>
+                    <Btn onClick={()=>deleteRoom(r.code)} disabled={busy} color={T.red} danger>DELETE</Btn>
                   </div>
                 </Card>
               ))}
@@ -330,13 +341,13 @@ export default function AdminRoomPage({ adminUser }) {
 
   // ── ROOM MANAGEMENT ───────────────────────────────────────────────────────
   if (!room) return (
-    <div style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+    <div style={{ minHeight:"100vh", background:T.pageBg, display:"flex", alignItems:"center", justifyContent:"center" }}>
       <Stars/><div style={{ position:"relative", zIndex:1 }}><Spinner/></div>
     </div>
   );
 
   return (
-    <div style={{ minHeight:"100vh", background:T.bg, color:"#d0daf0", paddingBottom:24, position:"relative" }}>
+    <div style={{ minHeight:"100vh", background:T.pageBg, color:T.muted, paddingBottom:24, position:"relative" }}>
       <Stars/>
 
       {showEjection && room.kickedPlayer && room.kickedPlayer!=="skip" && (
@@ -344,48 +355,48 @@ export default function AdminRoomPage({ adminUser }) {
       )}
 
       <div style={{ position:"relative", zIndex:1 }}>
-        <header style={{ background:"linear-gradient(135deg,#0c0416,#090f20)", borderBottom:`2px solid ${T.accent}33`, padding:"12px 16px", display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", rowGap:8 }}>
-          <button onClick={()=>setActiveCode(null)} style={{ background:"none", border:"1px solid #1e2d50", color:"#3a4a6a", borderRadius:8, padding:"5px 10px", fontSize:"0.65rem", cursor:"pointer" }}>← ROOMS</button>
+        <header style={{ background:`linear-gradient(135deg, ${T.bg}, ${T.card})`, borderBottom:`2px solid ${T.accent}33`, padding:"12px 16px", display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", rowGap:8 }}>
+          <button onClick={()=>setActiveCode(null)} style={{ background:T.card, border:`1px solid ${T.border}`, color:T.blue, borderRadius:8, padding:"5px 10px", fontSize:"0.65rem", cursor:"pointer" }}>← ROOMS</button>
           <div>
             <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.1rem", letterSpacing:"3px", color:T.accent }}>ROOM</div>
-            <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.6rem", letterSpacing:"5px", color:"#4488ff", lineHeight:1 }}>{activeCode}</div>
+            <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.6rem", letterSpacing:"5px", color:T.blue, lineHeight:1 }}>{activeCode}</div>
           </div>
           <div style={{ marginLeft:"auto", display:"flex", gap:8, alignItems:"center" }}>
             <PhasePill phase={room.phase}/>
-            <button onClick={logoutAdmin} style={{ background:"none", border:"1px solid #1e2d50", color:"#3a4a6a", borderRadius:8, padding:"5px 10px", fontSize:"0.65rem", cursor:"pointer" }}>LOGOUT</button>
+            <button onClick={logoutAdmin} style={{ background:T.card, border:`1px solid ${T.border}`, color:T.blue, borderRadius:8, padding:"5px 10px", fontSize:"0.65rem", cursor:"pointer" }}>LOGOUT</button>
           </div>
         </header>
 
         {/* Join URL bar */}
-        <div style={{ background:"#080d18", borderBottom:`1px solid ${T.border}`, padding:"10px 16px", display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
-          <span style={{ fontSize:"0.62rem", color:"#2a3a60", letterSpacing:"1px", flexShrink:0 }}>JOIN URL</span>
-          <div style={{ flex:1, minWidth:0, background:"#0a0f1c", border:`1px solid ${T.border}`, borderRadius:8, padding:"6px 10px", fontSize:"0.72rem", color:"#4488ff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+        <div style={{ background:T.card, borderBottom:`1px solid ${T.border}`, padding:"10px 16px", display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+          <span style={{ fontSize:"0.62rem", color:T.muted, letterSpacing:"1px", flexShrink:0 }}>JOIN URL</span>
+          <div style={{ flex:1, minWidth:0, background:T.bg, border:`1px solid ${T.border}`, borderRadius:8, padding:"6px 10px", fontSize:"0.72rem", color:T.blue, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
             {joinUrl}
           </div>
-          <button onClick={copyUrl} style={{ background:`${copied?"#00cc77":"#4488ff"}14`, border:`1px solid ${copied?"#00cc77":"#4488ff"}`, color:copied?"#00cc77":"#4488ff", borderRadius:8, padding:"6px 12px", fontSize:"0.68rem", cursor:"pointer", flexShrink:0, letterSpacing:"1px", transition:"all 0.2s" }}>
+          <button onClick={copyUrl} style={{ background:`${copied?`${T.yellow}14`:`${T.blue}14`}`, border:`1px solid ${copied?T.yellow:T.blue}`, color:copied?T.yellow:T.blue, borderRadius:8, padding:"6px 12px", fontSize:"0.68rem", cursor:"pointer", flexShrink:0, letterSpacing:"1px", transition:"all 0.2s" }}>
             {copied ? "COPIED ✓" : "COPY"}
           </button>
-          <button onClick={()=>setShowQR(!showQR)} style={{ background:showQR?`${T.accent}14`:"transparent", border:`1px solid ${showQR?T.accent:"#2a3a60"}`, color:showQR?T.accent:"#3a4a6a", borderRadius:8, padding:"6px 12px", fontSize:"0.68rem", cursor:"pointer", flexShrink:0, letterSpacing:"1px" }}>
+          <button onClick={()=>setShowQR(!showQR)} style={{ background:showQR?`${T.accent}14`:"transparent", border:`1px solid ${showQR?T.accent:T.muted}`, color:showQR?T.accent:T.muted, borderRadius:8, padding:"6px 12px", fontSize:"0.68rem", cursor:"pointer", flexShrink:0, letterSpacing:"1px" }}>
             {showQR?"HIDE QR":"QR CODE"}
           </button>
         </div>
 
-        <div style={{ background:"#080d18", borderBottom:`1px solid ${T.border}`, padding:"10px 16px", display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
-          <span style={{ fontSize:"0.62rem", color:"#2a3a60", letterSpacing:"1px", flexShrink:0 }}>DISPLAY URL</span>
-          <div style={{ flex:1, minWidth:0, background:"#0a0f1c", border:`1px solid ${T.border}`, borderRadius:8, padding:"6px 10px", fontSize:"0.72rem", color:"#00cc77", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+        <div style={{ background:T.card, borderBottom:`1px solid ${T.border}`, padding:"10px 16px", display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+          <span style={{ fontSize:"0.62rem", color:T.muted, letterSpacing:"1px", flexShrink:0 }}>DISPLAY URL</span>
+          <div style={{ flex:1, minWidth:0, background:T.bg, border:`1px solid ${T.border}`, borderRadius:8, padding:"6px 10px", fontSize:"0.72rem", color:T.yellow, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
             {screenUrl}
           </div>
-          <button onClick={copyScreenUrl} style={{ background:`${copiedScreen?"#00cc77":"#00cc77"}14`, border:`1px solid ${copiedScreen?"#00cc77":"#00cc77"}`, color:copiedScreen?"#00cc77":"#00cc77", borderRadius:8, padding:"6px 12px", fontSize:"0.68rem", cursor:"pointer", flexShrink:0, letterSpacing:"1px", transition:"all 0.2s" }}>
+          <button onClick={copyScreenUrl} style={{ background:`${copiedScreen?`${T.yellow}14`:`${T.yellow}14`}`, border:`1px solid ${T.yellow}`, color:T.yellow, borderRadius:8, padding:"6px 12px", fontSize:"0.68rem", cursor:"pointer", flexShrink:0, letterSpacing:"1px", transition:"all 0.2s" }}>
             {copiedScreen ? "COPIED ✓" : "COPY"}
           </button>
         </div>
 
         {/* QR Code panel */}
         {showQR && (
-          <div style={{ background:"#080d18", borderBottom:`1px solid ${T.border}`, padding:"20px", display:"flex", flexDirection:"column", alignItems:"center", gap:12 }}>
+          <div style={{ background:T.card, borderBottom:`1px solid ${T.border}`, padding:"20px", display:"flex", flexDirection:"column", alignItems:"center", gap:12 }}>
             <QRCode url={joinUrl} size={200}/>
-            <div style={{ fontSize:"0.65rem", color:"#2a3a60", letterSpacing:"2px", textAlign:"center" }}>
-              Scan to join room <strong style={{ color:"#4488ff" }}>{activeCode}</strong>
+            <div style={{ fontSize:"0.65rem", color:T.muted, letterSpacing:"2px", textAlign:"center" }}>
+              Scan to join room <strong style={{ color:T.blue }}>{activeCode}</strong>
             </div>
           </div>
         )}
@@ -395,16 +406,16 @@ export default function AdminRoomPage({ adminUser }) {
           {/* LEFT: Players */}
           <Card>
             <SectionLabel>Crewmates</SectionLabel>
-            {err && <div style={{ color:"#ff5555", fontSize:"0.72rem", marginBottom:8 }}>{err}</div>}
+            {err && <div style={{ color:T.red, fontSize:"0.72rem", marginBottom:8 }}>{err}</div>}
             <div style={{ display:"flex", gap:8, marginBottom:12 }}>
               <input value={nameInput} onChange={e=>{setNameInput(e.target.value);setErr("");}} onKeyDown={e=>e.key==="Enter"&&addPlayer()}
                 placeholder="Player name…"
-                style={{ flex:1, background:"#080d18", border:`1px solid ${T.border}`, color:"#d0daf0", borderRadius:9, padding:"9px 12px", fontSize:"0.82rem", outline:"none" }}/>
-              <Btn onClick={addPlayer} disabled={busy||!nameInput.trim()} color="#00cc77">+ ADD</Btn>
+                style={{ flex:1, background:T.card, border:`1px solid ${T.border}`, color:T.muted, borderRadius:9, padding:"9px 12px", fontSize:"0.82rem", outline:"none" }}/>
+              <Btn onClick={addPlayer} disabled={busy||!nameInput.trim()} color={T.yellow}>+ ADD</Btn>
             </div>
 
             {/* Color swatches */}
-            <div style={{ display:"flex", flexWrap:"wrap", gap:7, marginBottom:12, padding:10, background:"#080d18", borderRadius:10, border:`1px solid ${T.border}` }}>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:7, marginBottom:12, padding:10, background:T.card, borderRadius:10, border:`1px solid ${T.border}` }}>
               {COLOR_NAMES.map(c=>(
                 <button key={c} title={usedColors.includes(c)?`${c} (taken)`:c} onClick={()=>!usedColors.includes(c)&&setColorPick(c)} disabled={usedColors.includes(c)}
                   style={{ width:26, height:26, borderRadius:"50%", background:CREWMATE_COLORS[c], border:colorPick===c?"3px solid #fff":"2px solid transparent", cursor:usedColors.includes(c)?"not-allowed":"pointer", opacity:usedColors.includes(c)?0.2:1, padding:0, flexShrink:0, transition:"all 0.15s", boxShadow:colorPick===c?`0 0 10px ${CREWMATE_COLORS[c]}`:"none" }}/>
@@ -412,41 +423,45 @@ export default function AdminRoomPage({ adminUser }) {
             </div>
 
             {/* Color preview */}
-            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, padding:"8px 12px", background:"#080d18", borderRadius:9, border:`1px solid ${T.border}` }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, padding:"8px 12px", background:T.card, borderRadius:9, border:`1px solid ${T.border}` }}>
               <Crewmate color={colorPick} size={36}/>
               <span style={{ color:CREWMATE_COLORS[colorPick], fontWeight:700, fontSize:"0.85rem" }}>{colorPick}</span>
             </div>
 
             {/* Impostor picker */}
-            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, padding:"12px", background:"#0a0515", borderRadius:10, border:"1px solid #c5111122" }}>
-              <span style={{ fontSize:"0.72rem", color:"#c51111", letterSpacing:"1px", flex:1 }}>🔪 IMPOSTORS</span>
-              <button onClick={()=>setImpostorTargetCount(impostorCount-1)} disabled={busy} style={{ background:"#1a0505", border:"1px solid #c5111133", color:"#c51111", borderRadius:6, width:28, height:28, cursor:"pointer", fontSize:"1rem" }}>−</button>
-              <span style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.2rem", color:"#e8334a", minWidth:20, textAlign:"center" }}>{impostorCount}</span>
-              <button onClick={()=>setImpostorTargetCount(impostorCount+1)} disabled={busy} style={{ background:"#1a0505", border:"1px solid #c5111133", color:"#c51111", borderRadius:6, width:28, height:28, cursor:"pointer", fontSize:"1rem" }}>+</button>
-              <Btn onClick={assignImpostors} disabled={busy||players.length<2} color="#c51111" style={{ padding:"6px 12px", fontSize:"0.7rem" }}>RANDOM</Btn>
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, padding:"12px", background:`${T.red}0f`, borderRadius:10, border:`1px solid ${T.red}22` }}>
+              <span style={{ fontSize:"0.72rem", color:T.red, letterSpacing:"1px", flex:1 }}>🔪 IMPOSTORS</span>
+              <button onClick={()=>setImpostorTargetCount(impostorCount-1)} disabled={busy} style={{ background:`${T.red}14`, border:`1px solid ${T.red}33`, color:T.red, borderRadius:6, width:28, height:28, cursor:"pointer", fontSize:"1rem" }}>−</button>
+              <span style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.2rem", color:T.red, minWidth:20, textAlign:"center" }}>{impostorCount}</span>
+              <button onClick={()=>setImpostorTargetCount(impostorCount+1)} disabled={busy} style={{ background:`${T.red}14`, border:`1px solid ${T.red}33`, color:T.red, borderRadius:6, width:28, height:28, cursor:"pointer", fontSize:"1rem" }}>+</button>
+              <Btn onClick={assignImpostors} disabled={busy||players.length<2} color={T.red} style={{ padding:"6px 12px", fontSize:"0.7rem" }}>RANDOM</Btn>
             </div>
 
             {/* Player list */}
             <div style={{ display:"flex", flexDirection:"column", gap:7, maxHeight:320, overflowY:"auto" }}>
-              {players.length===0&&<div style={{ color:"#2a3a60", fontSize:"0.78rem", textAlign:"center", padding:"18px 0" }}>No crewmates yet</div>}
+              {players.length===0&&<div style={{ color:T.muted, fontSize:"0.78rem", textAlign:"center", padding:"18px 0" }}>No crewmates yet</div>}
               {players.map(p=>(
-                <div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, background:p.isImpostor?"#0f0408":p.alive?"#080d18":"#0a0404", border:`1px solid ${p.isImpostor?"#c5111133":p.alive?T.border:"#c5111122"}`, borderRadius:10, padding:"8px 12px", opacity:p.alive?1:0.55 }}>
-                  <Crewmate color={p.color} size={28} dead={!p.alive}/>
+                <div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, background:p.isImpostor?`${T.red}11`:p.alive?T.card:"rgba(255,255,255,0.05)", border:`1px solid ${p.isImpostor?`${T.red}33`:p.alive?T.border:"rgba(255,255,255,0.08)"}`, borderRadius:10, padding:"8px 12px", opacity:p.alive?1:0.55 }}>
+                  {PLAYER_ICONS[p.name] ? (
+                    <img src={PLAYER_ICONS[p.name]} alt={p.name} style={{ width:30, height:30, borderRadius:"50%", objectFit:"cover", border:"1px solid rgba(255,255,255,0.12)" }}/>
+                  ) : (
+                    <Crewmate color={p.color} size={28} dead={!p.alive}/>
+                  )}
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontSize:"0.83rem", fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</div>
                     <div style={{ fontSize:"0.6rem", color:CREWMATE_COLORS[p.color] }}>{p.color}</div>
                   </div>
-                  {p.isImpostor&&<Pill color="#c51111">impostor</Pill>}
-                  {!p.alive&&<Pill color="#555">dead</Pill>}
-                  {votes[p.name]&&p.alive&&<Pill color="#4488ff">voted ✓</Pill>}
+                  {p.isImpostor&&<Pill color={T.red}>impostor</Pill>}
+                  {!p.alive&&<Pill color={T.muted}>dead</Pill>}
+                  {votes[p.name]&&p.alive&&<Pill color={T.blue}>voted ✓</Pill>}
                   <button
                     onClick={() => toggleImpostor(p.id)}
                     disabled={busy || room.phase !== "lobby" || !p.alive}
-                    style={{ background:p.isImpostor?"#c5111122":"transparent", border:`1px solid ${p.isImpostor?"#c51111":"#2a3a60"}`, color:p.isImpostor?"#ff6666":"#7a8cab", borderRadius:6, padding:"4px 8px", fontSize:"0.64rem", cursor:"pointer", letterSpacing:"1px" }}
+                    style={{ background:p.isImpostor?`${T.red}22`:"transparent", border:`1px solid ${p.isImpostor?T.red:T.muted}`, color:p.isImpostor?T.red:T.muted, borderRadius:6, padding:"4px 8px", fontSize:"0.64rem", cursor:"pointer", letterSpacing:"1px" }}
                   >
                     {p.isImpostor ? "UNSET" : "SET"}
                   </button>
-                  <button onClick={()=>removePlayer(p.id)} disabled={busy} style={{ background:"none", border:"none", color:"#c51111", cursor:"pointer", fontSize:"1.1rem", lineHeight:1, padding:"2px 4px" }}>✕</button>
+                  <button onClick={()=>removePlayer(p.id)} disabled={busy} style={{ background:T.card, border:`1px solid ${T.border}`, color:T.red, cursor:"pointer", fontSize:"1.1rem", lineHeight:1, padding:"2px 4px", borderRadius:6 }}>✕</button>
                 </div>
               ))}
             </div>
@@ -456,22 +471,22 @@ export default function AdminRoomPage({ adminUser }) {
           <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
             <Card>
               <SectionLabel>Game Timer</SectionLabel>
-              <div style={{ marginBottom:12, padding:"10px 12px", background:"#080d18", border:`1px solid ${T.border}`, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
-                <span style={{ color:"#2a3a60", fontSize:"0.68rem", letterSpacing:"2px" }}>REMAINING</span>
-                <span style={{ fontFamily:"'Russo One',sans-serif", color:liveRemainingMs>0?"#00cc77":"#ff6666", fontSize:"1.4rem", letterSpacing:"2px" }}>{formatClock(liveRemainingMs)}</span>
+              <div style={{ marginBottom:12, padding:"10px 12px", background:T.card, border:`1px solid ${T.border}`, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
+                <span style={{ color:T.muted, fontSize:"0.68rem", letterSpacing:"2px" }}>REMAINING</span>
+                <span style={{ fontFamily:"'Russo One',sans-serif", color:liveRemainingMs>0?T.yellow:T.red, fontSize:"1.4rem", letterSpacing:"2px" }}>{formatClock(liveRemainingMs)}</span>
               </div>
               <div style={{ display:"flex", gap:8, marginBottom:14 }}>
-                <Btn full onClick={startGameClock} disabled={busy||room.phase!=="lobby"} color="#00cc77">▶ Start 45m</Btn>
-                <Btn full onClick={pauseGameClock} disabled={busy||!room.gameTimerRunning} color="#ffcc00">⏸ Pause</Btn>
-                <Btn full onClick={resumeGameClock} disabled={busy||room.phase!=="lobby"||room.gameTimerRunning||liveRemainingMs<=0||!room.gameStarted} color="#4488ff">⏵ Resume</Btn>
+                <Btn full onClick={startGameClock} disabled={busy||room.phase!=="lobby"} color={T.yellow}>▶ Start 45m</Btn>
+                <Btn full onClick={pauseGameClock} disabled={busy||!room.gameTimerRunning} color={T.yellow}>⏸ Pause</Btn>
+                <Btn full onClick={resumeGameClock} disabled={busy||room.phase!=="lobby"||room.gameTimerRunning||liveRemainingMs<=0||!room.gameStarted} color={T.blue}>⏵ Resume</Btn>
               </div>
 
               <SectionLabel>Meeting Controls</SectionLabel>
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                <Btn full onClick={startVoting} disabled={busy||alivePlayers.length<2||room.phase==="voting"} color="#4488ff">🚨 Start Emergency Meeting</Btn>
-                <Btn full onClick={revealVotes} disabled={busy||room.phase!=="voting"||votedCount===0} color="#b044ff">📊 Reveal Votes ({votedCount}/{alivePlayers.length})</Btn>
-                <Btn full onClick={backToLobby} disabled={busy||room.phase==="lobby"} color="#ffcc00">🔄 Back to Lobby</Btn>
-                <Btn full onClick={resetRoom} disabled={busy} color="#c51111" danger>⚠ Reset Room</Btn>
+                <Btn full onClick={startVoting} disabled={busy||alivePlayers.length<2||room.phase==="voting"} color={T.blue}>🚨 Start Emergency Meeting</Btn>
+                <Btn full onClick={revealVotes} disabled={busy||room.phase!=="voting"||votedCount===0} color={T.red}>📊 Reveal Votes ({votedCount}/{alivePlayers.length})</Btn>
+                <Btn full onClick={backToLobby} disabled={busy||room.phase==="lobby"} color={T.yellow}>🔄 Back to Lobby</Btn>
+                <Btn full onClick={resetRoom} disabled={busy} color={T.red} danger>⚠ Reset Room</Btn>
               </div>
             </Card>
 
@@ -480,7 +495,7 @@ export default function AdminRoomPage({ adminUser }) {
             )}
 
             {room.phase==="results"&&(
-              <Card style={{ border:`1px solid ${room.kickedPlayer&&room.kickedPlayer!=="skip"?"#c5111144":"#00cc7733"}` }}>
+              <Card style={{ border:`1px solid ${room.kickedPlayer&&room.kickedPlayer!=="skip"?`${T.red}44`:`${T.yellow}33`}` }}>
                 <SectionLabel>Result</SectionLabel>
                 <VoteResults votes={votes} kickedPlayer={room.kickedPlayer} players={players}/>
               </Card>

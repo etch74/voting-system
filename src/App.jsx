@@ -74,11 +74,11 @@ export default function App() {
   // ── Auth loading ────────────────────────────────────────────────────────────
   if (authLoading) {
     return (
-      <div style={{ minHeight:"100vh", background:T.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, position:"relative" }}>
+      <div style={{ minHeight:"100vh", background:T.pageBg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, position:"relative" }}>
         <Stars />
         <div style={{ position:"relative", zIndex:1, textAlign:"center" }}>
           <Spinner />
-          <div style={{ color:"#2a3a60", fontSize:"0.78rem", letterSpacing:"2px", marginTop:16 }}>
+          <div style={{ color:T.muted, fontSize:"0.78rem", letterSpacing:"2px", marginTop:16 }}>
             INITIALISING…
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Crewmate from "./Crewmate";
-import { CREWMATE_COLORS } from "../constants";
+import { CREWMATE_COLORS, T } from "../constants";
 
 function ConfettiPiece({ color, x, delay, size, duration }) {
   return (
@@ -8,7 +8,7 @@ function ConfettiPiece({ color, x, delay, size, duration }) {
   );
 }
 
-const CONFETTI_COLORS = ["#e8334a","#4488ff","#00cc77","#ffcc00","#b044ff","#38fedc","#ff63d4","#f5f557"];
+const CONFETTI_COLORS = [T.red, T.blue, T.yellow, T.yellow, T.red, T.blue, T.accent];
 
 export default function EjectionScreen({ kickedPlayer, players, isImpostor, onDone }) {
   const [phase, setPhase] = useState("falling");
@@ -27,7 +27,7 @@ export default function EjectionScreen({ kickedPlayer, players, isImpostor, onDo
   }, []);
 
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:999, background: isImpostor?"#020a04":"#0a0202", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
+    <div style={{ position:"fixed", inset:0, zIndex:999, background: isImpostor?`${T.red}10`:`${T.blue}10`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
       <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%", pointerEvents:"none" }} preserveAspectRatio="xMidYMid slice" viewBox="0 0 100 100">
         {Array.from({length:40},(_,i)=>(
           <circle key={i} cx={`${((Math.sin(i*137.5)*0.5+0.5)*100).toFixed(1)}%`} cy={`${((Math.cos(i*97.3)*0.5+0.5)*100).toFixed(1)}%`} r={i%3===0?1.2:0.6} fill="white" opacity={0.08+(i%5)*0.05}/>
@@ -51,23 +51,23 @@ export default function EjectionScreen({ kickedPlayer, players, isImpostor, onDo
               <Crewmate color={kicked.color} size={80} dead/>
             </div>
           )}
-          <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.1rem", letterSpacing:"3px", color:"#888", marginBottom:8 }}>
+          <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.1rem", letterSpacing:"3px", color:T.muted, marginBottom:8 }}>
             {kickedPlayer}
           </div>
           {isImpostor ? (
             <>
-              <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"2.2rem", letterSpacing:"4px", color:"#00cc77", lineHeight:1.1, marginBottom:12, textShadow:"0 0 30px #00cc77aa" }}>
+              <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"2.2rem", letterSpacing:"4px", color:T.yellow, lineHeight:1.1, marginBottom:12, textShadow:`0 0 30px ${T.yellow}aa` }}>
                 WAS THE<br/>IMPOSTOR! ✅
               </div>
-              <div style={{ fontSize:"0.8rem", color:"#4a6a4a", letterSpacing:"2px", marginBottom:20 }}>CREWMATES WIN 🎉</div>
+              <div style={{ fontSize:"0.8rem", color:T.muted, letterSpacing:"2px", marginBottom:20 }}>CREWMATES WIN 🎉</div>
               <div style={{ fontSize:"3rem", animation:"float 1.5s ease-in-out infinite" }}>🎉🚀🎉</div>
             </>
           ) : (
             <>
-              <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"2.2rem", letterSpacing:"4px", color:"#e8334a", lineHeight:1.1, marginBottom:12, textShadow:"0 0 30px #e8334aaa", animation:"shake 0.4s ease 0.2s" }}>
+              <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"2.2rem", letterSpacing:"4px", color:T.red, lineHeight:1.1, marginBottom:12, textShadow:`0 0 30px ${T.red}aa`, animation:"shake 0.4s ease 0.2s" }}>
                 WAS NOT<br/>THE IMPOSTOR. ❌
               </div>
-              <div style={{ fontSize:"0.8rem", color:"#6a3a3a", letterSpacing:"2px", marginBottom:20 }}>IMPOSTORS STILL LURK 😱</div>
+              <div style={{ fontSize:"0.8rem", color:T.muted, letterSpacing:"2px", marginBottom:20 }}>IMPOSTORS STILL LURK 😱</div>
               <div style={{ fontSize:"3rem", animation:"float 1.5s ease-in-out infinite" }}>😱👻😱</div>
             </>
           )}
@@ -75,7 +75,7 @@ export default function EjectionScreen({ kickedPlayer, players, isImpostor, onDo
           {/* Reveal real impostors */}
           
 
-          <button onClick={onDone} style={{ marginTop:28, background:"transparent", border:"1px solid #2a3a60", color:"#3a4a6a", borderRadius:8, padding:"8px 20px", fontSize:"0.7rem", letterSpacing:"2px", cursor:"pointer" }}>
+          <button onClick={onDone} style={{ marginTop:28, background:T.card, border:`1px solid ${T.border}`, color:T.muted, borderRadius:8, padding:"8px 20px", fontSize:"0.7rem", letterSpacing:"2px", cursor:"pointer" }}>
             CONTINUE →
           </button>
         </div>

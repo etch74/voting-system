@@ -24,4 +24,5 @@ export default function Crewmate({ color = "Red", size = 48, dead = false, glow 
       </>}
     </svg>
   );
+ 
 }

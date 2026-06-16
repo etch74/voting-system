@@ -3,6 +3,7 @@ import { loginAdmin, registerAdmin } from "../firebase/db";
 import { T } from "../constants";
 import { Stars, Card, Btn, Input, SectionLabel } from "../components/ui";
 import Crewmate from "../components/Crewmate";
+import logo from "../images/logo.png";
 
 export default function AdminAuthPage() {
   const [mode,     setMode]     = useState("login"); // login | register
@@ -45,24 +46,20 @@ export default function AdminAuthPage() {
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:T.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:20, position:"relative" }}>
+    <div style={{ minHeight:"100vh", background:T.pageBg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:20, position:"relative" }}>
       <Stars/>
       <div style={{ position:"relative", zIndex:1, width:"min(380px,100%)", textAlign:"center" }}>
 
         {/* Logo */}
-        <div style={{ marginBottom:28 }}>
-          <div style={{ display:"flex", justifyContent:"center", marginBottom:14 }}>
-            <Crewmate color="Red" size={68} glow/>
-          </div>
-          <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.8rem", letterSpacing:"5px", color:T.accent }}>ADMIN</div>
-          <div style={{ color:"#2a3a60", fontSize:"0.65rem", letterSpacing:"4px", marginTop:4 }}>EMERGENCY CONTROL PANEL</div>
+        <div style={{ marginBottom:28, textAlign:"center" }}>
+          <img src={logo} alt="Among Us IRL" style={{ width:"90%", height:"auto", marginBottom:14 }} />
         </div>
 
         <Card style={{ animation: shaking ? "shake 0.4s ease" : "none", textAlign:"left" }}>
           <SectionLabel>{mode === "login" ? "Sign In" : "Create Admin Account"}</SectionLabel>
 
           {error && (
-            <div style={{ background:"#1a0505", border:"1px solid #c5111133", borderRadius:8, padding:"10px 12px", color:"#ff5555", fontSize:"0.73rem", marginBottom:14, lineHeight:1.6 }}>
+            <div style={{ background:`${T.red}14`, border:`1px solid ${T.red}33`, borderRadius:8, padding:"10px 12px", color:T.red, fontSize:"0.73rem", marginBottom:14, lineHeight:1.6 }}>
               {error}
             </div>
           )}
@@ -93,23 +90,23 @@ export default function AdminAuthPage() {
             )}
           </div>
 
-          <Btn full onClick={submit} disabled={loading} color={T.accent}>
+          <Btn full onClick={submit} disabled={loading} color={T.blue}>
             {loading ? "Please wait…" : mode === "login" ? "🔐 Sign In" : "✅ Create Account"}
           </Btn>
 
           <div style={{ marginTop:16, textAlign:"center" }}>
             <button
               onClick={() => { setMode(mode==="login"?"register":"login"); setError(""); }}
-              style={{ background:"none", border:"none", color:"#3a4a6a", fontSize:"0.7rem", cursor:"pointer", letterSpacing:"1px", textDecoration:"underline" }}
+              style={{ background:T.card, border:`1px solid ${T.border}`, color:T.muted, fontSize:"0.7rem", cursor:"pointer", letterSpacing:"1px", textDecoration:"underline", borderRadius:8, padding:"6px 10px" }}
             >
               {mode === "login" ? "No account? Register here" : "Already have an account? Sign in"}
             </button>
           </div>
         </Card>
 
-        <div style={{ marginTop:20, color:"#1e2e50", fontSize:"0.65rem", letterSpacing:"2px", textAlign:"center" }}>
+        <div style={{ marginTop:20, color:T.muted, fontSize:"0.75rem", letterSpacing:"1.8px", textAlign:"center" }}>
           ARE YOU A PLAYER?{" "}
-          <a href="/" style={{ color:"#4488ff", textDecoration:"none" }}>JOIN AS CREWMATE →</a>
+          <a href="/" style={{ color:T.muted, textDecoration:"underline", cursor:"pointer",  }}>JOIN AS CREWMATE →</a>
         </div>
       </div>
     </div>
