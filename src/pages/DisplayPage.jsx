@@ -78,22 +78,7 @@ export default function DisplayPage({ initialRoomCode }) {
     <div style={{ minHeight: "100vh", background: T.bg, color: "#d0daf0", position: "relative", padding: "20px 14px" }}>
       <Stars />
       <div style={{ maxWidth: 960, margin: "0 auto", position: "relative", zIndex: 1 }}>
-        <Card style={{ marginBottom: 14 }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <SectionLabel style={{ margin: 0 }}>Display Screen</SectionLabel>
-            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, width: "min(360px, 100%)" }}>
-              <Input
-                value={roomCodeInput}
-                onChange={e => setRoomCodeInput(e.target.value.toUpperCase())}
-                onKeyDown={e => e.key === "Enter" && submitCode()}
-                placeholder="Room code"
-                style={{ flex: 1, marginBottom: 0, textTransform: "uppercase", letterSpacing: "3px" }}
-              />
-              <Btn onClick={submitCode} color="#4488ff">Load</Btn>
-            </div>
-          </div>
-          {error && <div style={{ marginTop: 10, color: "#ff6666", fontSize: "0.8rem" }}>{error}</div>}
-        </Card>
+      
 
         {loading && (
           <Card style={{ textAlign: "center", padding: "48px 16px" }}>
@@ -103,10 +88,7 @@ export default function DisplayPage({ initialRoomCode }) {
 
         {!loading && room && (
           <>
-            <Card style={{ marginBottom: 14, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <div style={{ fontFamily: "'Russo One',sans-serif", fontSize: "1.6rem", letterSpacing: "5px", color: "#4488ff" }}>{roomCode}</div>
-              <PhasePill phase={room.phase} />
-            </Card>
+           
 
             {showMeetingScreen ? (
               <Card style={{ border: `1px solid ${room.phase === "voting" ? "#4488ff55" : "#b044ff55"}` }}>
