@@ -8,7 +8,7 @@ export const CREWMATE_COLORS = {
 export const COLOR_NAMES = Object.keys(CREWMATE_COLORS);
 
 export const T = {
-  pageBg: "linear-gradient(90deg, #4488ff 50%, #e8334a 50%)",
+  pageBg: "#4488ff",
   bg:     "#050714",
   card:   "rgba(10,14,28,0.94)",
   border: "rgba(255,255,255,0.08)",
@@ -17,6 +17,7 @@ export const T = {
   blue:   "#4488ff",
   red:    "#e8334a",
   yellow: "#ffcc00",
+  white:  "#ffffff",
 };
 
 /** Generate a random 6-character room code like "XK92AF" */

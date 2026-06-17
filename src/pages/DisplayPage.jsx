@@ -122,14 +122,16 @@ export default function DisplayPage({ initialRoomCode }) {
            
 
             {showMeetingScreen ? (
-              <Card style={{ border: `1px solid ${room.phase === "voting" ? `${T.blue}55` : `${T.red}55`}` }}>
-                <SectionLabel>{room.phase === "voting" ? "Emergency Meeting" : "Meeting Results"}</SectionLabel>
-                {room.phase === "voting" ? (
-                  <VoteTally alivePlayers={alivePlayers} votes={votes} votingOpen={room.votingOpen} />
-                ) : (
-                  <VoteResults votes={votes} kickedPlayer={room.kickedPlayer} players={players} />
-                )}
-              </Card>
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <Card style={{ border: `1px solid ${room.phase === "voting" ? `${T.blue}55` : `${T.red}55`}`, width: "100%", maxWidth: 960 }}>
+                  <SectionLabel>{room.phase === "voting" ? "Emergency Meeting" : "Meeting Results"}</SectionLabel>
+                  {room.phase === "voting" ? (
+                    <VoteTally alivePlayers={alivePlayers} votes={votes} votingOpen={room.votingOpen} />
+                  ) : (
+                    <VoteResults votes={votes} kickedPlayer={room.kickedPlayer} players={players} />
+                  )}
+                </Card>
+              </div>
             ) : (
               <Card style={{ textAlign: "center", padding: "50px 20px", border: `1px solid ${T.yellow}33` }}>
                 <div style={{ color: T.muted, letterSpacing: "2px", fontSize: "0.8rem", marginBottom: 8 }}>GAME TIMER</div>
