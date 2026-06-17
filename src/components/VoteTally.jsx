@@ -9,12 +9,12 @@ export default function VoteTally({ alivePlayers, votes, votingOpen }) {
       <div style={{ fontSize:"0.7rem", letterSpacing:"2px", color:T.muted, marginBottom:4, display:"flex", alignItems:"center", gap:8 }}>
         LIVE TALLY {votingOpen && <span style={{ color:T.yellow, animation:"blink 1s infinite" }}>● syncing</span>}
       </div>
-      <div style={{ display:"grid", width:"100%", gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))", gap:16, justifyItems:"center" }}>
+      <div style={{ display:"grid", width:"100%", gridTemplateColumns:"repeat(4, minmax(0, 1fr))", gap:16, justifyItems:"center" }}>
         {alivePlayers.map(p => {
           const count = tally[p.name]||0;
           const pct   = alivePlayers.length ? count/alivePlayers.length : 0;
           return (
-            <div key={p.id} style={{ width:"100%", maxWidth:320, background:T.card, border:`1px solid ${T.border}`, borderRadius:18, padding:18, textAlign:"center", boxShadow:"0 18px 40px rgba(0,0,0,0.16)", display:"flex", flexDirection:"column", gap:12 }}>
+            <div key={p.id} style={{ width:"100%", background:T.card, border:`1px solid ${T.border}`, borderRadius:18, padding:18, textAlign:"center", boxShadow:"0 18px 40px rgba(0,0,0,0.16)", display:"flex", flexDirection:"column", gap:12 }}>
               <div style={{ display:"flex", justifyContent:"center" }}>
                 {AVAILABLE_ICONS[p.iconKey] ? (
                   <img src={AVAILABLE_ICONS[p.iconKey]} alt={p.name} style={{ width:64, height:64, borderRadius:"50%", objectFit:"cover", border:`2px solid ${T.border}` }} />

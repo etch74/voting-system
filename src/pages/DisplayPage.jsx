@@ -95,10 +95,7 @@ export default function DisplayPage({ initialRoomCode }) {
     <div style={{ minHeight: "100vh", background: T.pageBg, color: T.muted, position: "relative", padding: "20px 14px" }}>
       <Stars />
       <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:18 }}>
-        <img src={logo} alt="Among Us IRL" style={{ width:"100px", height:"auto" }} />
-        <div style={{ textAlign:"center" }}>
-          <div style={{ color:T.muted, fontSize:"0.78rem", letterSpacing:"2px" }}>DISPLAY MODE</div>
-        </div>
+        <img src={logo} alt="Among Us IRL" style={{ width:"inherit", height:"10rem" }} />
       </div>
       {showEjection && room?.kickedPlayer && room.kickedPlayer !== "skip" && (
         <EjectionScreen

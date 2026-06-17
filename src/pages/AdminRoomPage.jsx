@@ -23,6 +23,7 @@ export default function AdminRoomPage({ adminUser }) {
   const [room,         setRoom]         = useState(null);   // live room data
   const [nameInput,    setNameInput]    = useState("");
   const [iconKey,      setIconKey]      = useState(AVAILABLE_ICON_KEYS[0]);
+  const [roomDuration, setRoomDuration] = useState(45);
   const [impostorCount,setImpostorCount]= useState(1);
   const [busy,         setBusy]         = useState(false);
   const [err,          setErr]          = useState("");
@@ -78,7 +79,15 @@ export default function AdminRoomPage({ adminUser }) {
   // ── Room management ───────────────────────────────────────────────────────
   const createRoom = () => wrap(async () => {
     const code = generateRoomCode();
-    const newRoom = { ...DEFAULT_ROOM, code, createdAt: Date.now(), adminUid: adminUser.uid };
+    const durationMs = Math.max(1, roomDuration) * 60 * 1000;
+    const newRoom = {
+      ...DEFAULT_ROOM,
+      code,
+      createdAt: Date.now(),
+      adminUid: adminUser.uid,
+      gameDurationMs: durationMs,
+      gameRemainingMs: durationMs,
+    };
     await dbSet(`rooms/${code}`, newRoom);
     await dbUpdate(`admins/${adminUser.uid}/rooms`, { [code]: { code, createdAt: Date.now() } });
     setActiveCode(code);
@@ -299,6 +308,24 @@ export default function AdminRoomPage({ adminUser }) {
           <main style={{ maxWidth:600, margin:"0 auto", padding:"24px 14px" }}>
             <Card style={{ marginBottom:16, textAlign:"center" }}>
               <SectionLabel>Rooms</SectionLabel>
+              <div style={{ display:"flex", justifyContent:"center", gap:8, flexWrap:"wrap", marginBottom:12 }}>
+                {[15, 30, 45, 60].map(minutes => (
+                  <button key={minutes} onClick={() => setRoomDuration(minutes)}
+                    style={{
+                      padding:"8px 12px",
+                      borderRadius:10,
+                      border: roomDuration===minutes ? `2px solid ${T.yellow}` : `1px solid ${T.border}`,
+                      background: roomDuration===minutes ? `${T.yellow}15` : T.card,
+                      color: T.muted,
+                      cursor:"pointer",
+                      minWidth:52,
+                      fontWeight: roomDuration===minutes ? 700 : 500,
+                    }}
+                  >
+                    {minutes}m
+                  </button>
+                ))}
+              </div>
               <Btn onClick={createRoom} disabled={busy} color={T.yellow} full>
                 + Create New Room
               </Btn>
@@ -477,7 +504,7 @@ export default function AdminRoomPage({ adminUser }) {
                 <span style={{ fontFamily:"'Russo One',sans-serif", color:liveRemainingMs>0?T.yellow:T.red, fontSize:"1.4rem", letterSpacing:"2px" }}>{formatClock(liveRemainingMs)}</span>
               </div>
               <div style={{ display:"flex", gap:8, marginBottom:14 }}>
-                <Btn full onClick={startGameClock} disabled={busy||room.phase!=="lobby"} color={T.yellow}>▶ Start 45m</Btn>
+                <Btn full onClick={startGameClock} disabled={busy||room.phase!=="lobby"} color={T.yellow}>▶ Start {Math.round(gameDurationMs / 60000)}m</Btn>
                 <Btn full onClick={pauseGameClock} disabled={busy||!room.gameTimerRunning} color={T.yellow}>⏸ Pause</Btn>
                 <Btn full onClick={resumeGameClock} disabled={busy||room.phase!=="lobby"||room.gameTimerRunning||liveRemainingMs<=0||!room.gameStarted} color={T.blue}>⏵ Resume</Btn>
               </div>
