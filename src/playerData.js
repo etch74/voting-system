@@ -1,11 +1,11 @@
-import MarwanIcon from "./images/Marwan.svg";
-import BoltxIcon from "./images/Boltx.svg";
-import ZeadIcon from "./images/Zead.svg";
-import JamaicaIcon from "./images/Jamaica.svg";
-import KarimIcon from "./images/Karim.svg";
-import MohabIcon from "./images/Mohab.svg";
-import SeifIcon from "./images/Seif.svg";
-import OmarKatoIcon from "./images/OmarKato.svg";
+import MarwanIcon from "./images/Marwan.png";
+import BoltxIcon from "./images/Boltx.png";
+import ZeadIcon from "./images/Zead.png";
+import JamaicaIcon from "./images/Jamaica.png";
+import KarimIcon from "./images/Karim.png";
+import MohabIcon from "./images/Mohab.png";
+import SeifIcon from "./images/Seif.png";
+import OmarKatoIcon from "./images/OmarKato.png";
 
 export const AVAILABLE_ICONS = {
   Marwan: MarwanIcon,
