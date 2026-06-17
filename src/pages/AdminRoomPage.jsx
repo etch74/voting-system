@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { dbSet, dbUpdate, dbListen, logoutAdmin, DEFAULT_ROOM } from "../firebase/db";
-import { generateRoomCode, CREWMATE_COLORS, COLOR_NAMES, T } from "../constants";
-import { PRESET_PLAYERS, PLAYER_ICONS } from "../playerData";
-import Crewmate from "../components/Crewmate";
+import { generateRoomCode, T } from "../constants";
+import { AVAILABLE_ICONS, AVAILABLE_ICON_KEYS } from "../playerData";
 import logo from "../images/logo.png";
 import QRCode from "../components/QRCode";
 import VoteTally from "../components/VoteTally";
@@ -23,7 +22,7 @@ export default function AdminRoomPage({ adminUser }) {
   const [activeCode,   setActiveCode]   = useState(null);   // currently managed room code
   const [room,         setRoom]         = useState(null);   // live room data
   const [nameInput,    setNameInput]    = useState("");
-  const [colorPick,    setColorPick]    = useState("Red");
+  const [iconKey,      setIconKey]      = useState(AVAILABLE_ICON_KEYS[0]);
   const [impostorCount,setImpostorCount]= useState(1);
   const [busy,         setBusy]         = useState(false);
   const [err,          setErr]          = useState("");
@@ -72,13 +71,7 @@ export default function AdminRoomPage({ adminUser }) {
     setPrevPhase(room.phase);
   }, [room?.phase]);
 
-  // Auto-pick available color
-  const players     = room ? Object.values(room.players||{}) : [];
-  const usedColors  = players.map(p=>p.color);
-  useEffect(() => {
-    const avail = COLOR_NAMES.filter(c=>!usedColors.includes(c));
-    if (!avail.includes(colorPick) && avail.length>0) setColorPick(avail[0]);
-  }, [usedColors.join(",")]);
+  const players = room ? Object.values(room.players||{}) : [];
 
   const wrap = async fn => { setBusy(true); try { await fn(); } finally { setBusy(false); } };
 
@@ -88,16 +81,6 @@ export default function AdminRoomPage({ adminUser }) {
     const newRoom = { ...DEFAULT_ROOM, code, createdAt: Date.now(), adminUid: adminUser.uid };
     await dbSet(`rooms/${code}`, newRoom);
     await dbUpdate(`admins/${adminUser.uid}/rooms`, { [code]: { code, createdAt: Date.now() } });
-
-    const now = Date.now();
-    const playerEntries = Object.fromEntries(
-      PRESET_PLAYERS.map((player, index) => {
-        const id = `p_${now}_${index}`;
-        return [id, { id, name: player.name, color: player.color, alive: true, isImpostor: false }];
-      })
-    );
-    await dbUpdate(`rooms/${code}/players`, playerEntries);
-
     setActiveCode(code);
   });
 
@@ -113,11 +96,23 @@ export default function AdminRoomPage({ adminUser }) {
     if (!name) { setErr("Enter a name"); return; }
     if (players.find(p=>p.name.toLowerCase()===name.toLowerCase())) { setErr("Name taken"); return; }
     const id = `p_${Date.now()}`;
-    await dbUpdate(`rooms/${activeCode}/players/${id}`, { id, name, color:colorPick, alive:true, isImpostor:false });
+    await dbUpdate(`rooms/${activeCode}/players/${id}`, { id, name, iconKey, alive:true, isImpostor:false });
     setNameInput(""); setErr("");
   });
 
-  const removePlayer = id => wrap(() => dbSet(`rooms/${activeCode}/players/${id}`, null));
+  const removePlayer = id => wrap(async () => {
+    const removedPlayer = players.find(p => p.id === id);
+    await dbSet(`rooms/${activeCode}/players/${id}`, null);
+    // If the removed player's icon was the current selection, keep it (now freed).
+    // If current iconKey is still taken by someone else, move to first free icon.
+    if (removedPlayer && iconKey !== removedPlayer.iconKey) {
+      const stillTaken = players.filter(p => p.id !== id).map(p => p.iconKey);
+      if (stillTaken.includes(iconKey)) {
+        const free = AVAILABLE_ICON_KEYS.find(k => !stillTaken.includes(k));
+        if (free) setIconKey(free);
+      }
+    }
+  });
 
   const getLiveRemainingMs = () => {
     const duration = room?.gameDurationMs || 45 * 60 * 1000;
@@ -414,18 +409,24 @@ export default function AdminRoomPage({ adminUser }) {
               <Btn onClick={addPlayer} disabled={busy||!nameInput.trim()} color={T.yellow}>+ ADD</Btn>
             </div>
 
-            {/* Color swatches */}
-            <div style={{ display:"flex", flexWrap:"wrap", gap:7, marginBottom:12, padding:10, background:T.card, borderRadius:10, border:`1px solid ${T.border}` }}>
-              {COLOR_NAMES.map(c=>(
-                <button key={c} title={usedColors.includes(c)?`${c} (taken)`:c} onClick={()=>!usedColors.includes(c)&&setColorPick(c)} disabled={usedColors.includes(c)}
-                  style={{ width:26, height:26, borderRadius:"50%", background:CREWMATE_COLORS[c], border:colorPick===c?"3px solid #fff":"2px solid transparent", cursor:usedColors.includes(c)?"not-allowed":"pointer", opacity:usedColors.includes(c)?0.2:1, padding:0, flexShrink:0, transition:"all 0.15s", boxShadow:colorPick===c?`0 0 10px ${CREWMATE_COLORS[c]}`:"none" }}/>
-              ))}
+            {/* Image picker */}
+            <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:12, padding:10, background:T.card, borderRadius:10, border:`1px solid ${T.border}` }}>
+              {AVAILABLE_ICON_KEYS.map(key => {
+                const usedByOther = players.some(p => p.iconKey === key);
+                const isSelected  = iconKey === key;
+                return (
+                  <button key={key} title={usedByOther ? `${key} (taken)` : key} onClick={() => !usedByOther && setIconKey(key)} disabled={usedByOther}
+                    style={{ width:48, height:48, borderRadius:"50%", padding:2, cursor:usedByOther?"not-allowed":"pointer", border:isSelected?"3px solid #fff":"2px solid transparent", boxShadow:isSelected?"0 0 10px rgba(255,255,255,0.4)":"none", overflow:"hidden", background:"transparent", transition:"all 0.15s", flexShrink:0, opacity:usedByOther?0.2:1 }}>
+                    <img src={AVAILABLE_ICONS[key]} alt={key} style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%", display:"block" }}/>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Color preview */}
+            {/* Selected image preview */}
             <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, padding:"8px 12px", background:T.card, borderRadius:9, border:`1px solid ${T.border}` }}>
-              <Crewmate color={colorPick} size={36}/>
-              <span style={{ color:CREWMATE_COLORS[colorPick], fontWeight:700, fontSize:"0.85rem" }}>{colorPick}</span>
+              <img src={AVAILABLE_ICONS[iconKey]} alt={iconKey} style={{ width:36, height:36, borderRadius:"50%", objectFit:"cover", border:"1px solid rgba(255,255,255,0.2)" }}/>
+              <span style={{ color:T.white, fontWeight:700, fontSize:"0.85rem" }}>{iconKey}</span>
             </div>
 
             {/* Impostor picker */}
@@ -442,14 +443,14 @@ export default function AdminRoomPage({ adminUser }) {
               {players.length===0&&<div style={{ color:T.muted, fontSize:"0.78rem", textAlign:"center", padding:"18px 0" }}>No crewmates yet</div>}
               {players.map(p=>(
                 <div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, background:p.isImpostor?`${T.red}11`:p.alive?T.card:"rgba(255,255,255,0.05)", border:`1px solid ${p.isImpostor?`${T.red}33`:p.alive?T.border:"rgba(255,255,255,0.08)"}`, borderRadius:10, padding:"8px 12px", opacity:p.alive?1:0.55 }}>
-                  {PLAYER_ICONS[p.name] ? (
-                    <img src={PLAYER_ICONS[p.name]} alt={p.name} style={{ width:30, height:30, borderRadius:"50%", objectFit:"cover", border:"1px solid rgba(255,255,255,0.12)" }}/>
+                  {AVAILABLE_ICONS[p.iconKey] ? (
+                    <img src={AVAILABLE_ICONS[p.iconKey]} alt={p.name} style={{ width:30, height:30, borderRadius:"50%", objectFit:"cover", border:"1px solid rgba(255,255,255,0.12)", opacity:p.alive?1:0.5 }}/>
                   ) : (
-                    <Crewmate color={p.color} size={28} dead={!p.alive}/>
+                    <div style={{ width:30, height:30, borderRadius:"50%", background:"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.75rem", color:T.muted }}>?</div>
                   )}
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontSize:"0.83rem", fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.name}</div>
-                    <div style={{ fontSize:"0.6rem", color:CREWMATE_COLORS[p.color] }}>{p.color}</div>
+                    <div style={{ fontSize:"0.6rem", color:T.muted }}>{p.iconKey||""}</div>
                   </div>
                   {p.isImpostor&&<Pill color={T.red}>impostor</Pill>}
                   {!p.alive&&<Pill color={T.muted}>dead</Pill>}

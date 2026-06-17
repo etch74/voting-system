@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Crewmate from "./Crewmate";
-import { CREWMATE_COLORS, T } from "../constants";
+import { T } from "../constants";
+import { AVAILABLE_ICONS } from "../playerData";
 
 function ConfettiPiece({ color, x, delay, size, duration }) {
   return (
@@ -39,7 +40,11 @@ export default function EjectionScreen({ kickedPlayer, players, isImpostor, onDo
       {/* Falling crewmate */}
       {kicked && phase === "falling" && (
         <div style={{ animation:"fall 1.6s cubic-bezier(0.25,0.46,0.45,0.94) forwards", position:"absolute", top:"20%" }}>
-          <Crewmate color={kicked.color} size={100} dead/>
+          {AVAILABLE_ICONS[kicked.iconKey] ? (
+            <img src={AVAILABLE_ICONS[kicked.iconKey]} alt={kicked.name} style={{ width:100, height:100, borderRadius:"50%", objectFit:"cover", border:"3px solid rgba(255,255,255,0.3)", filter:"grayscale(60%) brightness(0.7)" }}/>
+          ) : (
+            <Crewmate color={kicked.color||"Red"} size={100} dead/>
+          )}
         </div>
       )}
 
@@ -48,7 +53,11 @@ export default function EjectionScreen({ kickedPlayer, players, isImpostor, onDo
         <div style={{ textAlign:"center", padding:"0 24px", animation:"celebrate 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards", zIndex:20 }}>
           {kicked && (
             <div style={{ display:"flex", justifyContent:"center", marginBottom:16 }}>
-              <Crewmate color={kicked.color} size={80} dead/>
+              {AVAILABLE_ICONS[kicked.iconKey] ? (
+                <img src={AVAILABLE_ICONS[kicked.iconKey]} alt={kicked.name} style={{ width:80, height:80, borderRadius:"50%", objectFit:"cover", border:"3px solid rgba(255,255,255,0.25)", filter:"grayscale(40%) brightness(0.75)" }}/>
+              ) : (
+                <Crewmate color={kicked.color||"Red"} size={80} dead/>
+              )}
             </div>
           )}
           <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"1.1rem", letterSpacing:"3px", color:T.muted, marginBottom:8 }}>

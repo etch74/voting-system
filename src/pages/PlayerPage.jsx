@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { dbUpdate, dbListen } from "../firebase/db";
-import { CREWMATE_COLORS, T } from "../constants";
+import { T } from "../constants";
 import Crewmate from "../components/Crewmate";
 import logo from "../images/logo.png";
 import VoteResults from "../components/VoteResults";
 import EjectionScreen from "../components/EjectionScreen";
 import { Card, SectionLabel, PhasePill, Stars, Pill } from "../components/ui";
-import { PRESET_PLAYERS, PLAYER_ICONS } from "../playerData";
+import { AVAILABLE_ICONS } from "../playerData";
 
 export default function PlayerPage({ roomCode, initialPlayer, onLeave }) {
   const [room,         setRoom]         = useState(null);
@@ -65,9 +65,13 @@ export default function PlayerPage({ roomCode, initialPlayer, onLeave }) {
       <div style={{ minHeight:"100vh", background:T.pageBg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", position:"relative" }}>
         <Stars/>
         <div style={{ position:"relative", zIndex:1, textAlign:"center" }}>
-          <Crewmate color={me.color} size={100} dead/>
+          {AVAILABLE_ICONS[me.iconKey] ? (
+            <img src={AVAILABLE_ICONS[me.iconKey]} alt={me.name} style={{ width:100, height:100, borderRadius:"50%", objectFit:"cover", border:"3px solid rgba(255,255,255,0.2)", filter:"grayscale(50%) brightness(0.7)" }}/>
+          ) : (
+            <Crewmate color={me.color||"Red"} size={100} dead/>
+          )}
           <div style={{ fontFamily:"'Russo One',sans-serif", fontSize:"2.6rem", letterSpacing:"6px", color:T.red, marginTop:18 }}>EJECTED</div>
-          <div style={{ color:T.muted, fontSize:"0.73rem", letterSpacing:"2px", marginTop:8 }}>{me.name} • {me.color}</div>
+          <div style={{ color:T.muted, fontSize:"0.73rem", letterSpacing:"2px", marginTop:8 }}>{me.name}</div>
           {me.isImpostor && <div style={{ marginTop:12 }}><Pill color={T.red}>You were the Impostor</Pill></div>}
           <button onClick={onLeave} style={{ marginTop:28, background:T.card, border:`1px solid ${T.border}`, color:T.muted, borderRadius:8, padding:"8px 20px", fontSize:"0.68rem", letterSpacing:"2px", cursor:"pointer" }}>
             LEAVE SHIP
@@ -91,8 +95,8 @@ export default function PlayerPage({ roomCode, initialPlayer, onLeave }) {
           <img src={logo} alt="Logo" style={{ width:30, height:"auto" }} />
           <div>
             <div style={{ fontWeight:700, fontSize:"0.9rem" }}>{me.name}</div>
-            <div style={{ fontSize:"0.6rem", color:me.isImpostor?T.red:CREWMATE_COLORS[me.color] }}>
-              {me.isImpostor ? "⚠ IMPOSTOR" : `${me.color} crewmate`}
+            <div style={{ fontSize:"0.6rem", color:me.isImpostor?T.red:T.muted }}>
+              {me.isImpostor ? "⚠ IMPOSTOR" : `crewmate`}
             </div>
           </div>
           <div style={{ marginLeft:"auto", display:"flex", gap:8, alignItems:"center" }}>
@@ -131,7 +135,11 @@ export default function PlayerPage({ roomCode, initialPlayer, onLeave }) {
               <div style={{ display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center" }}>
                 {players.filter(p=>p.alive).map(p=>(
                   <div key={p.id} style={{ display:"flex", alignItems:"center", gap:6, background:T.card, borderRadius:9, padding:"6px 10px", border:`1px solid ${T.border}` }}>
-                    <Crewmate color={p.color} size={22}/>
+                    {AVAILABLE_ICONS[p.iconKey] ? (
+                      <img src={AVAILABLE_ICONS[p.iconKey]} alt={p.name} style={{ width:22, height:22, borderRadius:"50%", objectFit:"cover" }}/>
+                    ) : (
+                      <Crewmate color={p.color||"Red"} size={22}/>
+                    )}
                     <span style={{ fontSize:"0.75rem" }}>{p.name}</span>
                   </div>
                 ))}
@@ -152,16 +160,15 @@ export default function PlayerPage({ roomCode, initialPlayer, onLeave }) {
                 {alivePlayers.map(p=>(
                   <button key={p.id} onClick={()=>castVote(p.name)} disabled={busy}
                     style={{ background:T.card, border:`2px solid ${T.border}`, borderRadius:14, padding:"16px 10px", cursor:busy?"wait":"pointer", textAlign:"center", color:T.muted, transition:"border 0.15s,background 0.15s" }}
-                    onMouseEnter={e=>{e.currentTarget.style.border=`2px solid ${CREWMATE_COLORS[p.color]}77`;e.currentTarget.style.background=`${CREWMATE_COLORS[p.color]}0f`;}}
+                    onMouseEnter={e=>{e.currentTarget.style.border=`2px solid rgba(255,255,255,0.3)`;e.currentTarget.style.background=`rgba(255,255,255,0.06)`;}}    
                     onMouseLeave={e=>{e.currentTarget.style.border=`2px solid ${T.border}`;e.currentTarget.style.background=T.card;}}
                   >
-                    <div style={{ display:"flex", justifyContent:"center" }}>{PLAYER_ICONS[p.name] ? (
-                                                  <img src={PLAYER_ICONS[p.name]} alt={p.name} style={{ width:22, height:22, borderRadius:"50%", objectFit:"cover", border:`1px solid ${T.border}` }}/>
+                    <div style={{ display:"flex", justifyContent:"center" }}>{AVAILABLE_ICONS[p.iconKey] ? (
+                                                  <img src={AVAILABLE_ICONS[p.iconKey]} alt={p.name} style={{ width:22, height:22, borderRadius:"50%", objectFit:"cover", border:`1px solid ${T.border}` }}/>
                                                 ) : (
-                                                  <Crewmate color={p.color} size={18}/>
+                                                  <Crewmate color={p.color||"Red"} size={18}/>
                                                 )}</div>
                     <div style={{ fontWeight:700, marginTop:8, fontSize:"0.86rem" }}>{p.name}</div>
-                    <div style={{ fontSize:"0.6rem", color:CREWMATE_COLORS[p.color], marginTop:2 }}>{p.color}</div>
                   </button>
                 ))}
               </div>
@@ -186,8 +193,13 @@ export default function PlayerPage({ roomCode, initialPlayer, onLeave }) {
               </div>
               <div style={{ marginTop:20, display:"flex", justifyContent:"center", flexWrap:"wrap", gap:6 }}>
                 {players.filter(p=>p.alive).map(p=>(
-                  <div key={p.id} title={`${p.name}${votes[p.name]?" (voted)":""}`}>
-                    <Crewmate color={p.color} size={32} glow={!!votes[p.name]}/>
+                  <div key={p.id} title={`${p.name}${votes[p.name]?" (voted)":""}`}
+                    style={{ width:36, height:36, borderRadius:"50%", border: votes[p.name]?`2px solid ${T.yellow}`:`2px solid ${T.border}`, overflow:"hidden", boxShadow: votes[p.name]?`0 0 8px ${T.yellow}88`:"none", transition:"all 0.3s" }}>
+                    {AVAILABLE_ICONS[p.iconKey] ? (
+                      <img src={AVAILABLE_ICONS[p.iconKey]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+                    ) : (
+                      <Crewmate color={p.color||"Red"} size={32} glow={!!votes[p.name]}/>
+                    )}
                   </div>
                 ))}
               </div>

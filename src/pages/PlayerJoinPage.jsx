@@ -4,7 +4,7 @@ import { T } from "../constants";
 import { Stars, Card, Btn, Input, SectionLabel, Spinner } from "../components/ui";
 import Crewmate from "../components/Crewmate";
 import logo from "../images/logo.png";
-import { PRESET_PLAYERS, PLAYER_ICONS } from "../playerData";
+import { AVAILABLE_ICONS } from "../playerData";
 
 
 export default function PlayerJoinPage({ initialRoomCode, onJoin }) {
@@ -132,10 +132,10 @@ export default function PlayerJoinPage({ initialRoomCode, onJoin }) {
                         {players.map(p=>(
                           <button key={p.id} onClick={()=>nameInput===p.name ? submitName():setNameInput(p.name)}
                             style={{ display:"flex", alignItems:"center", gap:8, background:T.card, borderRadius:8, padding:"7px 10px", border:`1px solid ${T.border}`, color:T.muted, cursor:"pointer", fontSize:"0.73rem" }}>
-                            {PLAYER_ICONS[p.name] ? (
-                              <img src={PLAYER_ICONS[p.name]} alt={p.name} style={{ width:22, height:22, borderRadius:"50%", objectFit:"cover", border:`1px solid ${T.border}` }}/>
+                            {AVAILABLE_ICONS[p.iconKey] ? (
+                              <img src={AVAILABLE_ICONS[p.iconKey]} alt={p.name} style={{ width:22, height:22, borderRadius:"50%", objectFit:"cover", border:`1px solid ${T.border}` }}/>
                             ) : (
-                              <Crewmate color={p.color} size={18}/>
+                              <Crewmate color={p.color||"Red"} size={18}/>
                             )}
                             <span>{p.name}</span>
                           </button>

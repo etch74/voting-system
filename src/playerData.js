@@ -7,15 +7,15 @@ import MohabIcon from "./images/Mohab.svg";
 import SeifIcon from "./images/Seif.svg";
 import OmarKatoIcon from "./images/OmarKato.svg";
 
-export const PRESET_PLAYERS = [
-  { name: "Marwan", color: "Yellow", icon: MarwanIcon },
-  { name: "Boltx", color: "Red", icon: BoltxIcon },
-  { name: "Zead", color: "Blue", icon: ZeadIcon },
-  { name: "Jamaica", color: "Yellow", icon: JamaicaIcon },
-  { name: "Karim", color: "Red", icon: KarimIcon },
-  { name: "Mohab", color: "Blue", icon: MohabIcon },
-  { name: "Seif", color: "Yellow", icon: SeifIcon },
-  { name: "Omar Kato", color: "Red", icon: OmarKatoIcon },
-];
+export const AVAILABLE_ICONS = {
+  Marwan: MarwanIcon,
+  Boltx: BoltxIcon,
+  Zead: ZeadIcon,
+  Jamaica: JamaicaIcon,
+  Karim: KarimIcon,
+  Mohab: MohabIcon,
+  Seif: SeifIcon,
+  "Omar Kato": OmarKatoIcon,
+};
 
-export const PLAYER_ICONS = Object.fromEntries(PRESET_PLAYERS.map(p => [p.name, p.icon]));
+export const AVAILABLE_ICON_KEYS = Object.keys(AVAILABLE_ICONS);

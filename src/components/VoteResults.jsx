@@ -1,6 +1,7 @@
 import Crewmate from "./Crewmate";
 import { Card, Pill } from "./ui";
 import { T } from "../constants";
+import { AVAILABLE_ICONS } from "../playerData";
 
 export default function VoteResults({ votes, kickedPlayer, players, myName }) {
   const tally = {};
@@ -18,7 +19,13 @@ export default function VoteResults({ votes, kickedPlayer, players, myName }) {
           const isKicked=name===kickedPlayer;
           return (
             <div key={name} style={{ display:"flex", alignItems:"center", gap:12, background:isKicked?`${T.red}10`:T.card, border:`1.5px solid ${isKicked?T.red:`${T.blue}22`}`, borderRadius:12, padding:"10px 14px", animation:`fadeUp 0.4s ease ${i*0.08}s both` }}>
-              {p?<Crewmate color={p.color} size={36} dead={isKicked}/>:<span style={{ fontSize:"1.5rem", width:36, textAlign:"center" }}>⏭</span>}
+              {p ? (
+                AVAILABLE_ICONS[p.iconKey] ? (
+                  <img src={AVAILABLE_ICONS[p.iconKey]} alt={p.name} style={{ width:36, height:36, borderRadius:"50%", objectFit:"cover", border:`1px solid ${T.border}`, opacity:isKicked?0.6:1 }}/>
+                ) : (
+                  <Crewmate color={p.color||"Red"} size={36} dead={isKicked}/>
+                )
+              ) : <span style={{ fontSize:"1.5rem", width:36, textAlign:"center" }}>⏭</span>}
               <div style={{ flex:1 }}>
                 <div style={{ fontWeight:700, fontSize:"0.88rem" }}>{name==="skip"?"Skip Vote":name}</div>
                 {isKicked&&<Pill color={T.red} style={{ marginTop:3 }}>ejected</Pill>}
@@ -34,7 +41,15 @@ export default function VoteResults({ votes, kickedPlayer, players, myName }) {
             <div style={{ fontSize:"2.8rem", marginBottom:8 }}>💀</div>
             <div style={{ fontFamily:"'Russo One',sans-serif", color:T.red, fontSize:"1.5rem", letterSpacing:"3px" }}>YOU WERE EJECTED</div>
           </>):(<>
-            {(()=>{const p=players.find(x=>x.name===kickedPlayer);return p?<div style={{display:"flex",justifyContent:"center",marginBottom:8}}><Crewmate color={p.color} size={62} dead/></div>:null;})()}
+          {(()=>{const p=players.find(x=>x.name===kickedPlayer);return p?(
+            <div style={{display:"flex",justifyContent:"center",marginBottom:8}}>
+              {AVAILABLE_ICONS[p.iconKey] ? (
+                <img src={AVAILABLE_ICONS[p.iconKey]} alt={p.name} style={{ width:62, height:62, borderRadius:"50%", objectFit:"cover", border:`2px solid ${T.red}`, opacity:0.7 }}/>
+              ) : (
+                <Crewmate color={p.color||"Red"} size={62} dead/>
+              )}
+            </div>
+          ):null;})()}
             <div style={{ fontFamily:"'Russo One',sans-serif", color:T.red, fontSize:"1.4rem", letterSpacing:"3px" }}>EJECTED</div>
             <div style={{ color:T.muted, fontWeight:700, marginTop:4 }}>{kickedPlayer}</div>
           </>)}

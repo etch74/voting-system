@@ -1,4 +1,4 @@
-import { PLAYER_ICONS } from "../playerData";
+import { AVAILABLE_ICONS } from "../playerData";
 import { T } from "../constants";
 
 export default function VoteTally({ alivePlayers, votes, votingOpen }) {
@@ -16,8 +16,8 @@ export default function VoteTally({ alivePlayers, votes, votingOpen }) {
           return (
             <div key={p.id} style={{ width:"100%", maxWidth:320, background:T.card, border:`1px solid ${T.border}`, borderRadius:18, padding:18, textAlign:"center", boxShadow:"0 18px 40px rgba(0,0,0,0.16)", display:"flex", flexDirection:"column", gap:12 }}>
               <div style={{ display:"flex", justifyContent:"center" }}>
-                {PLAYER_ICONS[p.name] ? (
-                  <img src={PLAYER_ICONS[p.name]} alt={p.name} style={{ width:64, height:64, borderRadius:"50%", objectFit:"cover", border:`2px solid ${T.border}` }} />
+                {AVAILABLE_ICONS[p.iconKey] ? (
+                  <img src={AVAILABLE_ICONS[p.iconKey]} alt={p.name} style={{ width:64, height:64, borderRadius:"50%", objectFit:"cover", border:`2px solid ${T.border}` }} />
                 ) : (
                   <div style={{ width:64, height:64, borderRadius:"50%", background:T.border, display:"flex", alignItems:"center", justifyContent:"center", color:T.muted, fontSize:"0.8rem" }}>?
                   </div>
